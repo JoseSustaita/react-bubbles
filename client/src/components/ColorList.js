@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { axiosWithAuth } from "../ultils/axiosWithAuth";
-
+import { Link } from "react-router-dom";
 const initialColor = {
   color: "",
   code: { hex: "" },
@@ -43,13 +43,6 @@ const ColorList = ({ props, colors, updateColors }) => {
           .get("/api/colors")
           .then((res) => {
             updateColors(res.data);
-          })
-          .catch((err) => {
-            console.log();
-            console.log(res.data.payload);
-          })
-          .catch((err) => {
-            console.log(err);
           });
       });
   };
@@ -121,7 +114,7 @@ const ColorList = ({ props, colors, updateColors }) => {
       <form className="add-row" onSubmit={addColor}>
         <label>
           Enter New Color:
-          <input type="text" name="color" onChange={handleChange} />{" "}
+          <input type="text" name="color" onChange={handleChange} />
         </label>
         <label>
           Enter Hex Code:
@@ -129,6 +122,9 @@ const ColorList = ({ props, colors, updateColors }) => {
         </label>
         <div className="button-row">
           <button type="submit">Add New Color</button>
+          <button type="submit">
+            <Link to="/">Home</Link>
+          </button>
         </div>
       </form>
     </div>
