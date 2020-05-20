@@ -1,45 +1,74 @@
 import React, { useState } from "react";
-import axios from "axios";
-
+import { axiosWithAuth } from "../ultils/axiosWithAuth";
+import { Link } from "react-router-dom";
 const initialColor = {
   color: "",
-  code: { hex: "" }
+  code: { hex: "" },
 };
 
-const ColorList = ({ colors, updateColors }) => {
+const ColorList = ({ props, colors, updateColors }) => {
   console.log(colors);
   const [editing, setEditing] = useState(false);
   const [colorToEdit, setColorToEdit] = useState(initialColor);
+  const [newColor, setNewColor] = useState({
+    color: "",
+    code: {
+      hex: "",
+    },
+  });
 
-  const editColor = color => {
+  const editColor = (color) => {
     setEditing(true);
     setColorToEdit(color);
   };
 
-  const saveEdit = e => {
+  const saveEdit = (e) => {
     e.preventDefault();
-    // Make a put request to save your updated color
-    // think about where will you get the id from...
-    // where is is saved right now?
+    axiosWithAuth().put(`/api/colors/${colorToEdit.id}`, colorToEdit);
+    props.history.push("/bubble-page");
   };
 
-  const deleteColor = color => {
-    // make a delete request to delete this color
+  const deleteColor = (color) => {
+    axiosWithAuth().delete(`/api/colors/${color.id}`);
+    props.history.push("/bubble-page");
+  };
+  const addColor = (e) => {
+    e.preventDefault();
+    console.log(newColor);
+
+    axiosWithAuth()
+      .post("/api/colors", newColor)
+      .then((res) => {
+        axiosWithAuth()
+          .get("/api/colors")
+          .then((res) => {
+            updateColors(res.data);
+          });
+      });
+  };
+  const handleChange = (e) => {
+    setNewColor({ ...newColor, [e.target.name]: e.target.value });
+  };
+
+  const handleHexChange = (e) => {
+    setNewColor({ ...newColor, code: { hex: e.target.value } });
   };
 
   return (
     <div className="colors-wrap">
       <p>colors</p>
       <ul>
-        {colors.map(color => (
+        {colors.map((color) => (
           <li key={color.color} onClick={() => editColor(color)}>
             <span>
-              <span className="delete" onClick={e => {
-                    e.stopPropagation();
-                    deleteColor(color)
-                  }
-                }>
-                  x
+              <span
+                className="delete"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteColor(color);
+                }}
+              >
+                x
               </span>{" "}
               {color.color}
             </span>
@@ -56,7 +85,7 @@ const ColorList = ({ colors, updateColors }) => {
           <label>
             color name:
             <input
-              onChange={e =>
+              onChange={(e) =>
                 setColorToEdit({ ...colorToEdit, color: e.target.value })
               }
               value={colorToEdit.color}
@@ -65,10 +94,10 @@ const ColorList = ({ colors, updateColors }) => {
           <label>
             hex code:
             <input
-              onChange={e =>
+              onChange={(e) =>
                 setColorToEdit({
                   ...colorToEdit,
-                  code: { hex: e.target.value }
+                  code: { hex: e.target.value },
                 })
               }
               value={colorToEdit.code.hex}
@@ -80,8 +109,24 @@ const ColorList = ({ colors, updateColors }) => {
           </div>
         </form>
       )}
-      <div className="spacer" />
       {/* stretch - build another form here to add a color */}
+
+      <form className="add-row" onSubmit={addColor}>
+        <label>
+          Enter New Color:
+          <input type="text" name="color" onChange={handleChange} />
+        </label>
+        <label>
+          Enter Hex Code:
+          <input type="text" name="hex" onChange={handleHexChange} />
+        </label>
+        <div className="button-row">
+          <button type="submit">Add New Color</button>
+          <button type="submit">
+            <Link to="/">Home</Link>
+          </button>
+        </div>
+      </form>
     </div>
   );
 };
